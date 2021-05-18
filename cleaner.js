@@ -1,11 +1,3 @@
-# 描述
-使用油猴脚本屏蔽网站的内容，例如弹幕，评论，用户名等。
-
-# 如何使用
-首先安装油猴脚本，油猴脚本是一个浏览器插件，chorme和新版edge应该都可以找到，下载插件之后点击添加新脚本：
-![QQ截图20210518213625.png](https://cdn.kagurakana.xyz/QQ截图20210518213625.png@webp)
-在编辑器中添加下面的代码：
-```
 // ==UserScript==
 // @name         RegExp Cleaner master
 // @namespace    http://tampermonkey.net/
@@ -61,27 +53,22 @@ class _Cleaner {
     };
     this.template = `
     <div id="cleaner" class="cleaner-dom">
-    <div class="add-rule-btn cleaner-dom" title="添加屏蔽|鼠标中键重置">+</div>
-    <div class="add-rule-card cleaner-dom">
-      <h1>添加规则</h1>
-      <div class="input-group">
-        <input
-          type="text"
-          class="add-input"
-          placeholder="RegExp like /foo/"
-        />
-        <button class="add-btn">添加</button>
-      </div>
-      <h2>现有规则</h2>
-      <ul class="rule-list">
-        <li>1d</li>
-        <li>2dsfsd</li>
-        <li>3sdfs</li>
-        <li>4sd</li>
-        <li>5a</li>
-      </ul>
-      <button class="reset-btn">重置</button>
-    </div>
+     <div class="add-rule-btn cleaner-dom" title="添加屏蔽">+</div>
+     <div class="add-rule-card cleaner-dom">
+       <h1>添加规则</h1>
+       <div class="input-group cleaner-dom">
+         <input
+           type="text"
+           class="add-input cleaner-dom"
+           placeholder="RegExp like /foo/"
+         />
+         <button class="add-btn cleaner-dom">添加</button>
+       </div>
+       <h2>现有规则</h2>
+       <ul class="rule-list cleaner-dom"></ul>
+       <p>以上规则基于 <span class="clean-sitehost"></span> 域名下</p>
+       <button class="reset-btn cleaner-dom">重置</button>
+     </div>
   </div>
     `;
     this.styleText = `
@@ -233,6 +220,9 @@ class _Cleaner {
     let miniBtn = document.querySelector("#cleaner .add-rule-btn");
     let resetBtn = document.querySelector("#cleaner .reset-btn");
     let cleanerDom = document.querySelector("#cleaner");
+    let siteSpan = document.querySelector("#cleaner .clean-sitehost");
+    
+    siteSpan.innerText = location.hostname;
     cleanerDom.addEventListener("click", (e) => {
       e.stopPropagation();
     });
@@ -372,62 +362,3 @@ class _Cleaner {
   }
 }
 let _cleaner = new _Cleaner();
-
-
-```
-添加完毕后点击确定，之后新打开一个浏览器标签页，查看油猴脚本是否起作用，如果起作用，页面右下角会出现一个加号按钮：
-![QQ截图20210518213859.png](https://cdn.kagurakana.xyz/QQ截图20210518213859.png@webp)
-点击加号按钮可以在这个界面中添加正则关键字：
-
-![QQ截图20210518221325.png](https://cdn.kagurakana.xyz/QQ截图20210518221325.png@webp)
-
-例如添加以下代码，就可以屏蔽所有全是1的弹幕：
-```
-/^1+$/
-```
-可以在控制台看到屏蔽的东西：
-
-![QQ截图20210518221701.png](https://cdn.kagurakana.xyz/QQ截图20210518221701.png@webp)
-
-# 屏蔽刻不容缓
-![lajihua.png](https://cdn.kagurakana.xyz/lajihua.png@webp)
-上面是斗鱼的英雄联盟比赛直播间，弹幕上一堆刷问号的，我个人是比较烦弹幕刷问号的，
-```
-/^(?:\?|？)*(?:\?|？)$/
-```
-爽到！
-
-![QQ截图20210518222022.png](https://cdn.kagurakana.xyz/QQ截图20210518222022.png@webp)
-
-# 原理
-清理脚本会在两个时机进行dom清理：
-- 网页完全加载后（window.onload）
-- 网页body中dom变动后（mutationObserver）
-
-在网页加载完毕后，脚本会选择所有DOM，将配置项（存储在localStorage中的_Cleaner_config_）当前域名下的正则数组都遍历一遍<black>就硬循环</black>，找到包含屏蔽元素的最小DOM进行删除。
-
-在有新的内容加入时（例如弹幕或其他根据AJAX生成的DOM），借助MutationObserver获取到DOM元素，根据当前域名下的正则检查innerText，如果匹配到就删除。
-```
-{
-      "common": {
-        url: null,
-        pattenRegExps: [], 
-      },
-      "www.douyu.com": { // location.hostName
-        url: "douyu.com",  // 包含匹配网址即可，一般为location.hostName
-        pattenRegExps: [], // 正则
-      },
-      "www.bilibili.com": {
-        url: "bilibili.com",
-        pattenRegExps: [],
-      },
-...
-};
-```
-## 添加关键词
-添加关键词有两种方法，一种是直接写在上面油猴脚本的config中，好处是在localStorage清除后也会保留配置信息。坏处是不方便得修改jio本。
-
-另外一种方法就是点加号按钮，在弹出框中添加规则，脚本会将会修改config并存储至localStorage中。缺点是清除localStorage后会失效😔
-# 副作用
-由于脚本是对**所有DOM**进行关键词检测，所以可能会遇到正则规则不严谨导致脚本将页面内意想不到的DOM进行屏蔽。
-ps：你可以修改脚本最顶部的`//@match  *://*/*` 为需要使用脚本的网站。
