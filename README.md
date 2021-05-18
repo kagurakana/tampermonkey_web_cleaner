@@ -3,7 +3,9 @@
 
 # 如何使用
 首先安装油猴脚本，油猴脚本是一个浏览器插件，chorme和新版edge应该都可以找到，下载插件之后点击添加新脚本：
+
 ![QQ截图20210518213625.png](https://cdn.kagurakana.xyz/QQ截图20210518213625.png@webp)
+
 在编辑器中添加下面的代码：
 ```
 // ==UserScript==
@@ -414,14 +416,14 @@ let _cleaner = new _Cleaner();
         pattenRegExps: [], 
       },
       "www.douyu.com": { // location.hostName
-        url: "douyu.com",  // 包含匹配网址即可，一般为location.hostName
+        url: "douyu.com",  // 域名匹配，一般与location.hostName保持一致
         pattenRegExps: [], // 正则
       },
       "www.bilibili.com": {
         url: "bilibili.com",
         pattenRegExps: [],
       },
-...
+      // ...
 };
 ```
 ## 添加关键词
